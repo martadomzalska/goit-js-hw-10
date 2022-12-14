@@ -15,9 +15,9 @@ searchBox.addEventListener(
     countryList.innerHTML = '';
     countryInfo.innerHTML = '';
 
-    let name = searchBox.value.trim();
+    const name = searchBox.value.trim();
 
-    fetchCountries(name)
+if(name) {    fetchCountries(name)
       .then(response => {
         // console.log(response);
         if (response.length > 10) {
@@ -61,5 +61,5 @@ searchBox.addEventListener(
       .catch(error =>
         Notiflix.Notify.failure('Oops, there is no country with that name')
       );
-  }, DEBOUNCE_DELAY)
+  }}, DEBOUNCE_DELAY)
 );
