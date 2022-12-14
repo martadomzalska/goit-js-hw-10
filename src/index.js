@@ -1,50 +1,65 @@
 import './css/styles.css';
+import Notiflix, { Notify } from 'notiflix';
+import debounce from 'lodash.debounce';
+import { fetchCountries } from './fetchCountries';
+
+const DEBOUNCE_DELAY = 300;
 
 const searchBox = document.querySelector('#search-box');
 const countryList = document.querySelector('.country-list');
-const url = 'https://restcountries.com/v3.1/all';
+const countryInfo = document.querySelector('.country-info');
 
-fetch(url)
-    .then(response => {
-        if (!response.ok) throw new Error('There was an error');
+searchBox.addEventListener(
+  'input',
+  debounce(() => {
+    countryList.innerHTML = '';
+    countryInfo.innerHTML = '';
 
-        return response.json();
-    })
-    .then(body => {
-        const country = body;
-        console.log(country[200].capital);
-        console.log(typeof body );
-        const poland = body.find(({ cca2 }) => cca2 === "PL");
-        console.log(poland);
-    }
-       
-  )
-  .catch(error => console.error(error));
+    let name = searchBox.value.trim();
 
-searchBox.addEventListener('input', () => {
-  fetchCountries()
-    .then(body => {
-      console.log(body);
-    })
-    .catch(error => console.log(error));
-});
-
-function fetchCountries() {
-  return fetch('https://restcountries.com/v3.1/name/peru').then(response => {
-    if (!response.ok) throw new Error('There was an error');
-
-    return response.json();
-  });
-}
-
-function renderCountries() {
-
-}
-//     .then(body => {
-//        // console.log(body);
-//         const poland = body.find(({ capital }) => capital === 'Warsaw');
-//         console.log(poland);
-//     })
-//   .catch(error => console.error(error))
-
-const DEBOUNCE_DELAY = 300;
+    fetchCountries(name)
+      .then(response => {
+        // console.log(response);
+        if (response.length > 10) {
+          Notiflix.Notify.info(
+            'Too many matches found. Please enter a more specific name.'
+          );
+        } else if (response.length > 1) {
+          countryList.insertAdjacentHTML(
+            'beforeend',
+            response
+              .map(
+                element => `<li class="country-list__item">
+					<img class="country-list__flag" src="${element.flags.svg}" alt="${element.name.official}">
+					<p>${element.name.official}</p>
+					</li>`
+              )
+              .join('')
+          );
+        } else {
+          countryInfo.insertAdjacentHTML(
+            'beforeend',
+            `<ul class="country-info">
+					<li class="country-list__item">
+						<img class="country-list__flag" src="${response[0].flags.svg}" alt="${
+              response[0].name.official
+            }">
+						<h1>${response[0].name.official}</h1></li>
+					<li class="country-list__item"><p><b>Capital:</b> ${
+            response[0].capital
+          }</p></li>
+					<li class="country-list__item"><p><b>Population:</b> ${
+            response[0].population
+          }</p></li>
+					<li class="country-list__item"><p><b>Languages: </b>${Object.values(
+            response[0].languages
+          ).join(', ')}</p></li>
+					</ul>`
+          );
+        }
+      })
+      .catch(error =>
+        Notiflix.Notify.failure('Oops, there is no country with that name')
+      );
+  }, DEBOUNCE_DELAY)
+);
