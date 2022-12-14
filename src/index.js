@@ -15,7 +15,7 @@ searchBox.addEventListener(
     countryList.innerHTML = '';
     countryInfo.innerHTML = '';
 
-    const name = searchBox.value.trim();
+    let name = searchBox.value.trim();
 
 if(name) {    fetchCountries(name)
       .then(response => {
